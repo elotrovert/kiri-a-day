@@ -1,3 +1,6 @@
+import base64
+import html
+import mimetypes
 import os
 from pathlib import Path
 from typing import Optional
@@ -18,7 +21,8 @@ st.set_page_config(
 QUIZ_QUESTIONS = [
     {
         "image": "assets/quiz/q1-closeup.png",
-        "question": "What are we celebrating today?",
+        "reveal_image": "assets/reveals/q1-reveal.png",
+        "question": "Machi close-up scan 01: what is this tiny mystery detail?",
         "options": [
             "Kiri's adoption day",
             "A random Tuesday",
@@ -26,11 +30,12 @@ QUIZ_QUESTIONS = [
             "The invention of toast",
         ],
         "answer": "Kiri's adoption day",
-        "info": "Correct. Today is all about celebrating the day Kiri became family.",
+        "info": "Correct. Machi's sensors confirm this close-up belongs in the Kiri adoption day archive.",
     },
     {
         "image": "assets/quiz/q2-closeup.png",
-        "question": "What is the best way to mark Kiri's special day?",
+        "reveal_image": "assets/reveals/q2-reveal.png",
+        "question": "Machi close-up scan 02: identify the suspiciously adorable clue.",
         "options": [
             "Extra love and attention",
             "Ignoring her completely",
@@ -38,11 +43,12 @@ QUIZ_QUESTIONS = [
             "Cancelling all snacks",
         ],
         "answer": "Extra love and attention",
-        "info": "Exactly. Adoption days deserve affection, fuss, and a proper little celebration.",
+        "info": "Exactly. Machi awards one ceremonial beep for expert close-up recognition.",
     },
     {
         "image": "assets/quiz/q3-closeup.png",
-        "question": "What should Kiri receive for being wonderful?",
+        "reveal_image": "assets/reveals/q3-reveal.png",
+        "question": "Machi close-up scan 03: what object has been zoomed to maximum mystery?",
         "options": [
             "A treat",
             "A boring spreadsheet",
@@ -50,11 +56,12 @@ QUIZ_QUESTIONS = [
             "Nothing at all",
         ],
         "answer": "A treat",
-        "info": "Yes. A treat is the official currency of being excellent.",
+        "info": "Yes. The image analysis unit is delighted. The snack-adjacent answer has been accepted.",
     },
     {
         "image": "assets/quiz/q4-closeup.png",
-        "question": "What is Kiri's official adoption day status?",
+        "reveal_image": "assets/reveals/q4-reveal.png",
+        "question": "Machi close-up scan 04: final zoom challenge. What are we looking at?",
         "options": [
             "Deeply loved",
             "Mildly tolerated",
@@ -62,7 +69,7 @@ QUIZ_QUESTIONS = [
             "Pending paperwork",
         ],
         "answer": "Deeply loved",
-        "info": "Correct. Deeply loved, today and every day.",
+        "info": "Correct. Machi logs the result as: deeply loved, visually identified, emotionally verified.",
     },
 ]
 
@@ -141,6 +148,40 @@ def render_styles() -> None:
             font-size: 1rem;
             line-height: 1.5;
           }
+
+          .reveal-stage {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+            margin: 1rem 0 0.75rem;
+            overflow: visible;
+          }
+
+          .reveal-image {
+            width: min(100%, 420px);
+            max-height: 56vh;
+            object-fit: contain;
+            border-radius: 14px;
+            box-shadow: 0 18px 45px rgba(32, 38, 48, 0.24);
+            animation: machiRevealFly 720ms cubic-bezier(.16, .84, .3, 1.2) both;
+            transform-origin: 50% 85%;
+          }
+
+          @keyframes machiRevealFly {
+            0% {
+              opacity: 0;
+              transform: translateY(90px) scale(0.24) rotate(-7deg);
+            }
+            60% {
+              opacity: 1;
+              transform: translateY(-12px) scale(1.08) rotate(2deg);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0) scale(1) rotate(0);
+            }
+          }
         </style>
         """,
         unsafe_allow_html=True,
@@ -168,6 +209,29 @@ def render_quiz_image(image_path: Optional[str]) -> None:
         st.image(str(path), use_container_width=True)
     else:
         st.info(f"Add this question's close-up image at `{image_path}`.")
+
+
+def render_reveal_image(image_path: Optional[str]) -> None:
+    if not image_path:
+        return
+
+    path = Path(image_path)
+    if not path.exists():
+        st.info(f"Add the correct-answer reveal image at `{image_path}`.")
+        return
+
+    mime_type = mimetypes.guess_type(path.name)[0] or "image/png"
+    image_data = base64.b64encode(path.read_bytes()).decode("utf-8")
+    escaped_alt = html.escape(path.stem)
+
+    st.markdown(
+        f"""
+        <div class="reveal-stage">
+          <img class="reveal-image" src="data:{mime_type};base64,{image_data}" alt="{escaped_alt}" />
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def password_gate() -> bool:
@@ -201,8 +265,9 @@ def show_incorrect_dialog() -> None:
 
 
 @st.dialog("Correct")
-def show_correct_dialog(info: str) -> None:
+def show_correct_dialog(info: str, reveal_image: Optional[str]) -> None:
     machi_speech("answer accepted. celebratory tiny noises deployed.")
+    render_reveal_image(reveal_image)
     st.write(info)
 
     if st.button("Next question"):
@@ -235,14 +300,14 @@ def render_sidebar() -> None:
 
 
 def render_home() -> None:
-    st.title("happy adoption day kiri!")
+    st.title("Happy adoption day 2026 Kiri!")
 
     if not st.session_state.balloons_launched:
         st.balloons()
         st.session_state.balloons_launched = True
 
-    st.write("A tiny celebration app, made especially for Kiri.")
-    machi_speech("beep boop. adoption day celebration systems online.")
+    st.write("A little celebration app, made especially for my pookie.")
+    machi_speech("beep boop. adoption day celebration systems online...")
 
     if st.button("Start the adoption day quiz", type="primary"):
         st.session_state.page = "Adoption day quiz"
@@ -268,7 +333,7 @@ def render_quiz() -> None:
         return
 
     question = QUIZ_QUESTIONS[question_index]
-    machi_speech("question loaded. please select the most emotionally correct answer.")
+    machi_speech("close-up scan loaded. zoom levels: ridiculous. confidence: pending human genius.")
     st.progress((question_index + 1) / total_questions)
     st.caption(f"Question {question_index + 1} of {total_questions}")
     render_quiz_image(question.get("image"))
@@ -283,7 +348,7 @@ def render_quiz() -> None:
     if st.button("Submit answer", disabled=selected_answer is None):
         if selected_answer == question["answer"]:
             set_machi_beep(get_machi().machi_talk_wav(syllables=12))
-            show_correct_dialog(question["info"])
+            show_correct_dialog(question["info"], question.get("reveal_image"))
         else:
             set_machi_beep(get_machi().beep_error())
             show_incorrect_dialog()

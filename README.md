@@ -50,3 +50,22 @@ assets/quiz/q4-closeup.png
 ```
 
 Pre-cropped close-ups are best. Use `.png` for the placeholder filenames above, and keep the images roughly the same shape so the quiz layout feels consistent.
+
+## Correct-answer reveal images
+
+Put the full reveal images that appear after a correct guess in:
+
+```text
+assets/reveals/
+```
+
+The current placeholder filenames are:
+
+```text
+assets/reveals/q1-reveal.png
+assets/reveals/q2-reveal.png
+assets/reveals/q3-reveal.png
+assets/reveals/q4-reveal.png
+```
+
+These can be wider or larger than the close-ups. When a player guesses correctly, the reveal image pops up in the dialog with a fly-out grow animation.
