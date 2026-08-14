@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 import streamlit as st
+from PIL import Image
 
 from audio import play_wav_bytes_autoplay
 from machi import MachiWeb
@@ -93,6 +94,7 @@ def init_state() -> None:
         "sound_enabled": False,
         "play_beep": False,
         "beep_bytes": None,
+        "difficulty": "Hard",
     }
 
     for key, value in defaults.items():
@@ -200,13 +202,28 @@ def machi_speech(text: str) -> None:
     )
 
 
+def crop_center(image_path: Path, crop_ratio: float = 0.5) -> Image.Image:
+    image = Image.open(image_path)
+    width, height = image.size
+    crop_width = max(1, int(width * crop_ratio))
+    crop_height = max(1, int(height * crop_ratio))
+    left = (width - crop_width) // 2
+    top = (height - crop_height) // 2
+    return image.crop((left, top, left + crop_width, top + crop_height))
+
+
 def render_quiz_image(image_path: Optional[str]) -> None:
     if not image_path:
         return
 
     path = Path(image_path)
     if path.exists():
-        st.image(str(path), use_container_width=True)
+        if st.session_state.difficulty == "Hard":
+            st.caption("Hard mode: Machi has zoomed this clue to the center 50%.")
+            st.image(crop_center(path), use_container_width=True)
+        else:
+            st.caption("Easy mode: full close-up image.")
+            st.image(str(path), use_container_width=True)
     else:
         st.info(f"Add this question's close-up image at `{image_path}`.")
 
@@ -285,6 +302,14 @@ def render_sidebar() -> None:
         st.rerun()
 
     st.sidebar.caption("Browsers need one click before Machi can beep.")
+
+    st.sidebar.radio(
+        "Difficulty",
+        ["Hard", "Easy"],
+        index=["Hard", "Easy"].index(st.session_state.difficulty),
+        key="difficulty",
+        help="Hard zooms into the center 50% of each close-up. Easy shows the full image.",
+    )
 
     selected_page = st.sidebar.radio(
         "Go to",
