@@ -43,10 +43,10 @@ assets/quiz/
 The current placeholder filenames are:
 
 ```text
-assets/quiz/q1-closeup.jpg
-assets/quiz/q2-closeup.jpg
-assets/quiz/q3-closeup.jpg
-assets/quiz/q4-closeup.jpg
+assets/quiz/q1-closeup.png
+assets/quiz/q2-closeup.png
+assets/quiz/q3-closeup.png
+assets/quiz/q4-closeup.png
 ```
 
-Pre-cropped close-ups are best. Use `.jpg` or `.png`, and keep the images roughly the same shape so the quiz layout feels consistent.
+Pre-cropped close-ups are best. Use `.png` for the placeholder filenames above, and keep the images roughly the same shape so the quiz layout feels consistent.

@@ -17,7 +17,7 @@ st.set_page_config(
 
 QUIZ_QUESTIONS = [
     {
-        "image": "assets/quiz/q1-closeup.jpg",
+        "image": "assets/quiz/q1-closeup.png",
         "question": "What are we celebrating today?",
         "options": [
             "Kiri's adoption day",
@@ -29,7 +29,7 @@ QUIZ_QUESTIONS = [
         "info": "Correct. Today is all about celebrating the day Kiri became family.",
     },
     {
-        "image": "assets/quiz/q2-closeup.jpg",
+        "image": "assets/quiz/q2-closeup.png",
         "question": "What is the best way to mark Kiri's special day?",
         "options": [
             "Extra love and attention",
@@ -41,7 +41,7 @@ QUIZ_QUESTIONS = [
         "info": "Exactly. Adoption days deserve affection, fuss, and a proper little celebration.",
     },
     {
-        "image": "assets/quiz/q3-closeup.jpg",
+        "image": "assets/quiz/q3-closeup.png",
         "question": "What should Kiri receive for being wonderful?",
         "options": [
             "A treat",
@@ -53,7 +53,7 @@ QUIZ_QUESTIONS = [
         "info": "Yes. A treat is the official currency of being excellent.",
     },
     {
-        "image": "assets/quiz/q4-closeup.jpg",
+        "image": "assets/quiz/q4-closeup.png",
         "question": "What is Kiri's official adoption day status?",
         "options": [
             "Deeply loved",
