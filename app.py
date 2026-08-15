@@ -79,6 +79,11 @@ QUIZ_QUESTIONS = [
 ]
 
 
+PRIZE_IMAGE_DIR = Path("assets/prize")
+FIRST_PRIZE_IMAGE = str(PRIZE_IMAGE_DIR / "prize.png")
+BONUS_PRIZE_IMAGE = str(PRIZE_IMAGE_DIR / "bonus_prize.png")
+
+
 def get_app_password() -> str:
     """Read the password from Streamlit secrets or an environment variable."""
     try:
@@ -99,6 +104,7 @@ def init_state() -> None:
         "play_beep": False,
         "beep_bytes": None,
         "difficulty": "Hard",
+        "prize_stage": "first",
     }
 
     for key, value in defaults.items():
@@ -187,6 +193,26 @@ def render_styles() -> None:
               opacity: 1;
               transform: translateY(0) scale(1) rotate(0);
             }
+          }
+
+          div[data-testid="column"] div[data-testid="stButton"] > button {
+            font-size: 2.6rem;
+            line-height: 1;
+            height: 110px;
+            width: 100%;
+            border-radius: 16px;
+            background: linear-gradient(160deg, #ff8a8a 0%, #ffb347 100%);
+            border: 3px solid #d9534f;
+            color: white;
+            box-shadow: 0 10px 22px rgba(217, 83, 79, 0.35);
+            transition: transform 150ms ease, box-shadow 150ms ease;
+          }
+
+          div[data-testid="column"] div[data-testid="stButton"] > button:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 14px 28px rgba(217, 83, 79, 0.45);
+            border-color: #c9302c;
+            color: white;
           }
         </style>
         """,
@@ -297,6 +323,22 @@ def show_correct_dialog(info: str, reveal_image: Optional[str]) -> None:
         st.rerun()
 
 
+@st.dialog("Your Prize!")
+def show_prize_dialog(image_path: str, heading: str, next_stage: str) -> None:
+    machi_speech("prize protocol engaged. dispensing joy...")
+    st.subheader(heading)
+    render_reveal_image(image_path)
+
+    button_label = "Continue" if next_stage == "bonus" else "Finish"
+    if st.button(button_label):
+        st.session_state.prize_stage = next_stage
+        if next_stage == "bonus":
+            set_machi_beep(get_machi().beep_question())
+        else:
+            set_machi_beep(get_machi().beep_happy())
+        st.rerun()
+
+
 def render_sidebar() -> None:
     st.sidebar.title("Kiri")
 
@@ -344,6 +386,37 @@ def render_home() -> None:
         st.rerun()
 
 
+def render_present_row(stage_key: str, image_path: str, heading: str, next_stage: str) -> None:
+    cols = st.columns(3)
+    for present_index, col in enumerate(cols):
+        with col:
+            if st.button("🎁", key=f"prize_{stage_key}_{present_index}", use_container_width=True):
+                set_machi_beep(get_machi().beep_happy())
+                show_prize_dialog(image_path, heading, next_stage)
+
+
+def render_prize_section() -> None:
+    stage = st.session_state.prize_stage
+
+    if stage == "first":
+        st.subheader("Select a prize")
+        st.caption("Tap a present to see what you've won.")
+        render_present_row("first", FIRST_PRIZE_IMAGE, "Prize unlocked!", "bonus")
+
+    elif stage == "bonus":
+        st.subheader("Bonus prize")
+        st.caption("One more! Tap a present for your bonus prize.")
+        render_present_row("bonus", BONUS_PRIZE_IMAGE, "Bonus prize unlocked!", "done")
+
+    else:
+        st.success("All prizes collected. Happy adoption day, Kiri!")
+        if st.button("Play again"):
+            st.session_state.question_index = 0
+            st.session_state.prize_stage = "first"
+            set_machi_beep(get_machi().beep_happy())
+            st.rerun()
+
+
 def render_quiz() -> None:
     st.title("Adoption day quiz")
 
@@ -355,10 +428,7 @@ def render_quiz() -> None:
         machi_speech("quiz complete. maximum Kiri appreciation achieved.")
         st.balloons()
 
-        if st.button("Play again"):
-            st.session_state.question_index = 0
-            set_machi_beep(get_machi().beep_happy())
-            st.rerun()
+        render_prize_section()
         return
 
     question = QUIZ_QUESTIONS[question_index]
