@@ -82,6 +82,7 @@ QUIZ_QUESTIONS = [
 PRIZE_IMAGE_DIR = Path("assets/prize")
 FIRST_PRIZE_IMAGE = str(PRIZE_IMAGE_DIR / "prize.png")
 BONUS_PRIZE_IMAGE = str(PRIZE_IMAGE_DIR / "bonus_prize.png")
+BONUS_BONUS_PRIZE_IMAGE = str(PRIZE_IMAGE_DIR / "bonus_bonus_prize.png")
 
 
 def get_app_password() -> str:
@@ -329,13 +330,13 @@ def show_prize_dialog(image_path: str, heading: str, next_stage: str) -> None:
     st.subheader(heading)
     render_reveal_image(image_path)
 
-    button_label = "Continue" if next_stage == "bonus" else "Finish"
+    button_label = "Finish" if next_stage == "done" else "Continue"
     if st.button(button_label):
         st.session_state.prize_stage = next_stage
-        if next_stage == "bonus":
-            set_machi_beep(get_machi().beep_question())
-        else:
+        if next_stage == "done":
             set_machi_beep(get_machi().beep_happy())
+        else:
+            set_machi_beep(get_machi().beep_question())
         st.rerun()
 
 
@@ -387,7 +388,7 @@ def render_home() -> None:
 
 
 def render_present_row(stage_key: str, image_path: str, heading: str, next_stage: str) -> None:
-    cols = st.columns(3)
+    cols = st.columns(5)
     for present_index, col in enumerate(cols):
         with col:
             if st.button("🎁", key=f"prize_{stage_key}_{present_index}", use_container_width=True):
@@ -406,7 +407,12 @@ def render_prize_section() -> None:
     elif stage == "bonus":
         st.subheader("Bonus prize")
         st.caption("One more! Tap a present for your bonus prize.")
-        render_present_row("bonus", BONUS_PRIZE_IMAGE, "Bonus prize unlocked!", "done")
+        render_present_row("bonus", BONUS_PRIZE_IMAGE, "Bonus prize unlocked!", "bonusbonus")
+
+    elif stage == "bonusbonus":
+        st.subheader("Bonus bonus prize")
+        st.caption("because pookie deserves everything and more")
+        render_present_row("bonusbonus", BONUS_BONUS_PRIZE_IMAGE, "Bonus bonus prize unlocked!", "done")
 
     else:
         st.success("All prizes collected. Happy adoption day, Kiri!")
